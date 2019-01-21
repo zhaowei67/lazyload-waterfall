@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>waterfall-lazyload-ajax</title>
+    <style>
+        * {
+            margin:0;
+            padding:0;
+            box-sizing: border-box;
+        }
+        ul,li {
+            list-style: none;
+        }
+        .clearfix::after{
+            content: '';
+            display:block;
+            clear:both;
+        }
+        #newsList li {
+            float:left;
+        }
+        #load {
+            visibility: hidden;
+        }
+        #newsList {
+            /* position: relative; */
+        }
+        #newsList .item{
+            position: absolute;
+            width: 220px;
+            margin:10px;
+            border:1px solid;
+            transition: all .8s;
+        }
+        #newsList .item img {
+            width:188px;
+            margin:15px;
+        }
+        #newsList .header{
+            font-size:20px;
+            line-height: 1.5;
+            border-bottom:1px solid #A2A498;
+            text-align: center;
+        }
+        #newsList .detail {
+            font-size:12px;
+            line-height: 1.5;
+            margin:10px;
+            color:#777371;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="waterfallNews">
+            <ul id="newsList" class="clearfix">
+                <!-- <li class="item">
+                    <a href="#" class="link">
+                        <img src="http://s.img.mix.sina.com.cn/auto/resize?img=http%3A%2F%2Fwww.sinaimg.cn%2Fdy%2Fslidenews%2F5_img%2F2016_09%2F453_75615_657883.jpg&size=250_0" alt="">
+                    </a>
+                    <h4 class="header">标题</h4>
+                    <p class="detail">
+                        今日新闻
+                    </p>
+                </li> -->
+            </ul>
+            <div id="load">隐形</div>
+        </div>
+    </div>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="./js/exposure.js"></script>
+    <script src="./js/waterfall.js"></script>
+    <script>
+        var curPage = 1,
+            perPageCount = 40
+
+
+        Exposure.init($('#load'),function(){
+           var _this = this
+           getData(function(data){
+              var $node = getNode(data)
+              WaterFall.start($node)
+           })
+       })
+       WaterFall.bind()
+
+       function getData(callback){
+        $.ajax({
+            url: 'http://platform.sina.com.cn/slide/album_tech',
+            type: 'get',
+            dataType: "jsonp",
+            jsonp: "jsoncallback",
+            data: {
+                app_key: '1271687855',
+                format: 'json',
+                size:'img',
+                num: perPageCount,
+                page: curPage
+            },
+            success: function(ret){
+                if(ret.status.code == 0){
+                    // console.log(ret)
+                    callback(ret.data)
+                    curPage++
+                }
+
+            }
+        })
+       }
+       function getNode(data){
+           var tpl ='',
+            $nodes;
+            for(var i =0;i<data.length;i++){
+                // console.log(data)
+                tpl += '<li class="item">';
+                tpl += '<a href="#" class="link"><img src="'+data[i].img_url +'"alt=""></a>';
+                tpl += '<h4 class="header">' +data[i].short_name + '</h4> ';
+                tpl += '<p class="detail">' + data[i].short_intro + '</p>';
+                tpl += '</li>';
+            }
+            $nodes = $(tpl)
+            $('#newsList').append($nodes)
+            return $nodes
+       }
+
+    </script>
+</body>
+</html>
